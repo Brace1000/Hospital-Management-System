@@ -10,6 +10,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Hospital Management System", version="1.0.0")
 
+# Allow all origins during development to avoid CORS issues across localhost ports
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
