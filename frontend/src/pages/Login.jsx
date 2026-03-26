@@ -15,7 +15,7 @@ export default function Login() {
       form.append('password', data.password)
       const res = await api.post('/auth/login', form)
       login(res.data.user, res.data.access_token)
-      navigate('/')
+      navigate('/app')
     } catch {
       alert('Invalid credentials')
     }
@@ -24,7 +24,10 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-blue-50">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold text-blue-900 mb-6 text-center">🏥 HMS Login</h1>
+        <div className="text-center mb-6">
+          <Link to="/" className="text-sm text-blue-600 hover:underline">← Back to Home</Link>
+          <h1 className="text-2xl font-bold text-blue-900 mt-2">🏥 MediCare HMS Login</h1>
+        </div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Username</label>
