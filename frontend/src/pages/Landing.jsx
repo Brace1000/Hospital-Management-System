@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import heroBg from '../assets/hero-bg.png'
 import sectionBg from '../assets/section-bg.png'
 import logo from '../assets/logo.png'
-import logo from '../assets/logo.png'
 
 const faqs = [
   { q: 'How do I book an appointment?', a: 'Register an account with the patient role. A receptionist or admin will link your profile, after which you can log in and book appointments directly from the Appointments page.' },
