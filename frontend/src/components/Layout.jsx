@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import logo from '../assets/logo.png'
 
 const allNavItems = [
   { to: '/app', label: '🏠 Dashboard', roles: ['admin', 'doctor', 'nurse', 'pharmacist', 'receptionist', 'patient'] },
@@ -20,7 +21,10 @@ export default function Layout() {
   return (
     <div className="flex h-screen bg-gray-100">
       <aside className="w-64 bg-blue-900 text-white flex flex-col">
-        <div className="p-6 text-xl font-bold border-b border-blue-700">🏥 MediCare HMS</div>
+        <div className="p-4 text-xl font-bold border-b border-blue-700 flex items-center gap-2">
+          <img src={logo} alt="logo" className="h-8 w-auto" />
+          <span>MediCare HMS</span>
+        </div>
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map(({ to, label }) => (
             <NavLink
