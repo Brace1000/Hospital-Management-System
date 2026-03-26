@@ -2,12 +2,12 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const allNavItems = [
-  { to: '/', label: '🏠 Dashboard', roles: ['admin', 'doctor', 'nurse', 'pharmacist', 'receptionist', 'patient'] },
-  { to: '/patients', label: '🧑‍⚕️ Patients', roles: ['admin', 'doctor', 'nurse', 'receptionist'] },
-  { to: '/appointments', label: '📅 Appointments', roles: ['admin', 'doctor', 'receptionist', 'patient'] },
-  { to: '/pharmacy', label: '💊 Pharmacy', roles: ['admin', 'pharmacist', 'doctor'] },
-  { to: '/billing', label: '💳 Billing', roles: ['admin', 'receptionist', 'patient'] },
-  { to: '/reports', label: '📊 Reports', roles: ['admin', 'doctor', 'receptionist', 'pharmacist'] },
+  { to: '/app', label: '🏠 Dashboard', roles: ['admin', 'doctor', 'nurse', 'pharmacist', 'receptionist', 'patient'] },
+  { to: '/app/patients', label: '🧑⚕️ Patients', roles: ['admin', 'doctor', 'nurse', 'receptionist'] },
+  { to: '/app/appointments', label: '📅 Appointments', roles: ['admin', 'doctor', 'receptionist', 'patient'] },
+  { to: '/app/pharmacy', label: '💊 Pharmacy', roles: ['admin', 'pharmacist', 'doctor'] },
+  { to: '/app/billing', label: '💳 Billing', roles: ['admin', 'receptionist', 'patient'] },
+  { to: '/app/reports', label: '📊 Reports', roles: ['admin', 'doctor', 'receptionist', 'pharmacist'] },
 ]
 
 export default function Layout() {
@@ -15,18 +15,18 @@ export default function Layout() {
   const navigate = useNavigate()
   const navItems = allNavItems.filter(item => item.roles.includes(user?.role))
 
-  const handleLogout = () => { logout(); navigate('/login') }
+  const handleLogout = () => { logout(); navigate('/') }
 
   return (
     <div className="flex h-screen bg-gray-100">
       <aside className="w-64 bg-blue-900 text-white flex flex-col">
-        <div className="p-6 text-xl font-bold border-b border-blue-700">🏥 HMS</div>
+        <div className="p-6 text-xl font-bold border-b border-blue-700">🏥 MediCare HMS</div>
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map(({ to, label }) => (
             <NavLink
               key={to}
               to={to}
-              end={to === '/'}
+              end={to === '/app'}
               className={({ isActive }) =>
                 `block px-4 py-2 rounded-lg text-sm transition ${isActive ? 'bg-blue-600' : 'hover:bg-blue-700'}`
               }
