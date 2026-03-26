@@ -1,9 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
 
 export default function Pharmacy() {
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const role = user?.role
+  const canManageDrugs = ['admin', 'pharmacist'].includes(role)
+  const canPrescribe = ['admin', 'doctor'].includes(role)
+  const canDispense = ['admin', 'pharmacist'].includes(role)
   const { data: drugs = [] } = useQuery({ queryKey: ['drugs'], queryFn: () => api.get('/pharmacy/drugs').then(r => r.data) })
   const { data: prescriptions = [] } = useQuery({ queryKey: ['prescriptions'], queryFn: () => api.get('/pharmacy/prescriptions').then(r => r.data) })
   const { register, handleSubmit, reset } = useForm()
@@ -23,6 +29,7 @@ export default function Pharmacy() {
       <h1 className="text-2xl font-bold text-gray-800">Pharmacy</h1>
       <div className="bg-white p-4 rounded-2xl shadow">
         <h2 className="font-semibold text-gray-700 mb-3">Add Drug</h2>
+        {canManageDrugs ? (
         <form onSubmit={handleSubmit(d => addDrug.mutate(d))} className="grid grid-cols-2 gap-4">
           {[['name', 'Drug Name'], ['quantity', 'Quantity'], ['unit_price', 'Unit Price ($)'], ['expiry_date', 'Expiry Date']].map(([f, l]) => (
             <div key={f}>
@@ -35,6 +42,7 @@ export default function Pharmacy() {
             <button type="submit" className="bg-purple-700 text-white px-4 py-2 rounded-lg text-sm">Add Drug</button>
           </div>
         </form>
+        ) : <p className="text-sm text-gray-500">Only admins and pharmacists can add drugs.</p>}
       </div>
       <div className="bg-white rounded-2xl shadow overflow-auto">
         <h2 className="font-semibold text-gray-700 p-4 border-b">Drug Inventory</h2>
@@ -74,7 +82,7 @@ export default function Pharmacy() {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  {!p.dispensed && (
+                  {!p.dispensed && canDispense && (
                     <button onClick={() => dispense.mutate(p.id)} className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">
                       Dispense
                     </button>
