@@ -19,6 +19,14 @@ def create_patient(data: PatientCreate, db: Session = Depends(get_db), _=Depends
 def list_patients(db: Session = Depends(get_db), _=Depends(get_current_user)):
     return db.query(Patient).all()
 
+# IMPORTANT: /patients/me must be defined before /patients/{patient_id}
+@router.get("/patients/me", response_model=PatientOut)
+def get_my_patient_profile(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    p = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not p:
+        raise HTTPException(404, "No patient profile linked to your account")
+    return p
+
 @router.get("/patients/{patient_id}", response_model=PatientOut)
 def get_patient(patient_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
     p = db.query(Patient).filter(Patient.id == patient_id).first()
@@ -51,11 +59,13 @@ def create_appointment(data: AppointmentCreate, db: Session = Depends(get_db), c
         patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
         if not patient:
             raise HTTPException(400, "No patient profile linked to your account. Ask a receptionist to register you first.")
-        from app.schemas.patient import AppointmentCreate as AC
-        data = AC(patient_id=patient.id, doctor_id=data.doctor_id, date=data.date, time=data.time, notes=data.notes)
-    a = Appointment(**data.model_dump())
-    db.add(a); db.commit(); db.refresh(a)
-    return a
+        appt = Appointment(patient_id=patient.id, doctor_id=data.doctor_id, date=data.date, time=data.time, notes=data.notes)
+    else:
+        if not data.patient_id:
+            raise HTTPException(400, "patient_id is required")
+        appt = Appointment(**data.model_dump())
+    db.add(appt); db.commit(); db.refresh(appt)
+    return appt
 
 @router.get("/appointments", response_model=List[AppointmentOut])
 def list_appointments(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
@@ -66,17 +76,17 @@ def list_appointments(db: Session = Depends(get_db), current_user=Depends(get_cu
         return db.query(Appointment).filter(Appointment.patient_id == patient.id).all()
     return db.query(Appointment).all()
 
-@router.get("/patients/me", response_model=PatientOut)
-def get_my_patient_profile(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    p = db.query(Patient).filter(Patient.user_id == current_user.id).first()
-    if not p:
-        raise HTTPException(404, "No patient profile found")
-    return p
-
 @router.put("/appointments/{appt_id}/status")
-def update_appointment_status(appt_id: int, status: str, db: Session = Depends(get_db), _=Depends(require_role("admin", "receptionist", "doctor"))):
+def update_appointment_status(appt_id: int, status: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     a = db.query(Appointment).filter(Appointment.id == appt_id).first()
     if not a: raise HTTPException(404, "Appointment not found")
+    # patients can only cancel their own appointments
+    if current_user.role == "patient":
+        patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+        if not patient or a.patient_id != patient.id:
+            raise HTTPException(403, "Not allowed")
+        if status != "cancelled":
+            raise HTTPException(403, "Patients can only cancel appointments")
     a.status = status
     db.commit()
     return {"message": "Status updated"}
