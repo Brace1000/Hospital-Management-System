@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
 
 export default function Patients() {
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const canManage = ['admin', 'receptionist', 'doctor', 'nurse'].includes(user?.role)
   const [editing, setEditing] = useState(null)
   const { data: patients = [] } = useQuery({ queryKey: ['patients'], queryFn: () => api.get('/patients').then(r => r.data) })
   const { register, handleSubmit, reset, setValue } = useForm()
@@ -24,6 +27,7 @@ export default function Patients() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-800 mb-4">Patients</h1>
+      {canManage && (
       <form onSubmit={handleSubmit(d => save.mutate(d))} className="bg-white p-4 rounded-2xl shadow mb-6 grid grid-cols-2 gap-4">
         {['name', 'age', 'gender', 'contact', 'address'].map(f => (
           <div key={f}>
@@ -42,6 +46,7 @@ export default function Patients() {
           {editing && <button type="button" onClick={() => { setEditing(null); reset() }} className="bg-gray-300 px-4 py-2 rounded-lg text-sm">Cancel</button>}
         </div>
       </form>
+      )}
       <div className="bg-white rounded-2xl shadow overflow-auto">
         <table className="w-full text-sm">
           <thead className="bg-blue-50 text-gray-600">
@@ -56,7 +61,7 @@ export default function Patients() {
                 <td className="px-4 py-3">{p.gender}</td>
                 <td className="px-4 py-3">{p.contact}</td>
                 <td className="px-4 py-3">
-                  <button onClick={() => startEdit(p)} className="text-blue-600 hover:underline text-xs">Edit</button>
+                  {canManage && <button onClick={() => startEdit(p)} className="text-blue-600 hover:underline text-xs">Edit</button>}
                 </td>
               </tr>
             ))}
