@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import heroBg from '../assets/hero-bg.png'
 import sectionBg from '../assets/section-bg.png'
+import logo from '../assets/logo.png'
+import logo from '../assets/logo.png'
 
 const faqs = [
   { q: 'How do I book an appointment?', a: 'Register an account with the patient role. A receptionist or admin will link your profile, after which you can log in and book appointments directly from the Appointments page.' },
@@ -50,7 +52,10 @@ export default function Landing() {
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-xl font-bold text-blue-700">🏥 MediCare Hospital</span>
+          <span className="flex items-center gap-2 text-xl font-bold text-blue-700">
+            <img src={logo} alt="logo" className="h-9 w-auto" />
+            MediCare Hospital
+          </span>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             {navLinks.map(s => (
               <button key={s} onClick={() => scrollTo(s)} className="capitalize hover:text-blue-700 transition">
@@ -246,8 +251,11 @@ export default function Landing() {
       <footer className="bg-blue-900 text-blue-200 py-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
-            <p className="text-white font-bold text-lg">🏥 MediCare Hospital</p>
-            <p className="text-sm mt-1">Transforming healthcare with technology.</p>
+            <div className="flex items-center gap-2 mb-1">
+              <img src={logo} alt="MediCare Logo" className="h-8 w-auto" />
+              <p className="text-white font-bold text-lg">MediCare Hospital</p>
+            </div>
+            <p className="text-sm">Transforming healthcare with technology.</p>
           </div>
           <div className="flex gap-6 text-sm">
             {navLinks.map(s => (
