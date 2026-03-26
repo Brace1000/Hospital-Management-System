@@ -2,6 +2,8 @@ import { useForm } from 'react-hook-form'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
+import heroBg from '../assets/hero.png'
+import logo from '../assets/logo.png'
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm()
@@ -22,11 +24,18 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-50">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ backgroundImage: `url(${heroBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+    >
+      <div className="absolute inset-0 bg-blue-900/60" />
+      <div className="relative z-10 bg-white/95 backdrop-blur p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4">
         <div className="text-center mb-6">
           <Link to="/" className="text-sm text-blue-600 hover:underline">← Back to Home</Link>
-          <h1 className="text-2xl font-bold text-blue-900 mt-2">🏥 MediCare HMS Login</h1>
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <img src={logo} alt="logo" className="h-10 w-auto" />
+            <h1 className="text-2xl font-bold text-blue-900">MediCare HMS</h1>
+          </div>
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
