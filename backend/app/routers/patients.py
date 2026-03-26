@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.models.patient import Patient, Doctor, Appointment
 from app.schemas.patient import PatientCreate, PatientOut, DoctorCreate, DoctorOut, AppointmentCreate, AppointmentOut
 
@@ -10,7 +10,7 @@ router = APIRouter(tags=["patients"])
 
 # --- Patients ---
 @router.post("/patients", response_model=PatientOut)
-def create_patient(data: PatientCreate, db: Session = Depends(get_db), _=Depends(get_current_user)):
+def create_patient(data: PatientCreate, db: Session = Depends(get_db), _=Depends(require_role("admin", "receptionist", "doctor", "nurse"))):
     p = Patient(**data.model_dump())
     db.add(p); db.commit(); db.refresh(p)
     return p
@@ -26,7 +26,7 @@ def get_patient(patient_id: int, db: Session = Depends(get_db), _=Depends(get_cu
     return p
 
 @router.put("/patients/{patient_id}", response_model=PatientOut)
-def update_patient(patient_id: int, data: PatientCreate, db: Session = Depends(get_db), _=Depends(get_current_user)):
+def update_patient(patient_id: int, data: PatientCreate, db: Session = Depends(get_db), _=Depends(require_role("admin", "receptionist", "doctor", "nurse"))):
     p = db.query(Patient).filter(Patient.id == patient_id).first()
     if not p: raise HTTPException(404, "Patient not found")
     for k, v in data.model_dump().items(): setattr(p, k, v)
@@ -35,7 +35,7 @@ def update_patient(patient_id: int, data: PatientCreate, db: Session = Depends(g
 
 # --- Doctors ---
 @router.post("/doctors", response_model=DoctorOut)
-def create_doctor(data: DoctorCreate, db: Session = Depends(get_db), _=Depends(get_current_user)):
+def create_doctor(data: DoctorCreate, db: Session = Depends(get_db), _=Depends(require_role("admin", "receptionist"))):
     d = Doctor(**data.model_dump())
     db.add(d); db.commit(); db.refresh(d)
     return d
@@ -46,17 +46,35 @@ def list_doctors(db: Session = Depends(get_db), _=Depends(get_current_user)):
 
 # --- Appointments ---
 @router.post("/appointments", response_model=AppointmentOut)
-def create_appointment(data: AppointmentCreate, db: Session = Depends(get_db), _=Depends(get_current_user)):
+def create_appointment(data: AppointmentCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    if current_user.role == "patient":
+        patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+        if not patient:
+            raise HTTPException(400, "No patient profile linked to your account. Ask a receptionist to register you first.")
+        from app.schemas.patient import AppointmentCreate as AC
+        data = AC(patient_id=patient.id, doctor_id=data.doctor_id, date=data.date, time=data.time, notes=data.notes)
     a = Appointment(**data.model_dump())
     db.add(a); db.commit(); db.refresh(a)
     return a
 
 @router.get("/appointments", response_model=List[AppointmentOut])
-def list_appointments(db: Session = Depends(get_db), _=Depends(get_current_user)):
+def list_appointments(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    if current_user.role == "patient":
+        patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+        if not patient:
+            return []
+        return db.query(Appointment).filter(Appointment.patient_id == patient.id).all()
     return db.query(Appointment).all()
 
+@router.get("/patients/me", response_model=PatientOut)
+def get_my_patient_profile(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    p = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not p:
+        raise HTTPException(404, "No patient profile found")
+    return p
+
 @router.put("/appointments/{appt_id}/status")
-def update_appointment_status(appt_id: int, status: str, db: Session = Depends(get_db), _=Depends(get_current_user)):
+def update_appointment_status(appt_id: int, status: str, db: Session = Depends(get_db), _=Depends(require_role("admin", "receptionist", "doctor"))):
     a = db.query(Appointment).filter(Appointment.id == appt_id).first()
     if not a: raise HTTPException(404, "Appointment not found")
     a.status = status
