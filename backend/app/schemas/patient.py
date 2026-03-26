@@ -9,6 +9,7 @@ class PatientCreate(BaseModel):
     contact: Optional[str] = None
     address: Optional[str] = None
     medical_history: Optional[str] = None
+    user_id: Optional[int] = None
 
 class PatientOut(PatientCreate):
     id: int
@@ -24,7 +25,7 @@ class DoctorOut(DoctorCreate):
     model_config = {"from_attributes": True}
 
 class AppointmentCreate(BaseModel):
-    patient_id: int
+    patient_id: Optional[int] = None
     doctor_id: int
     date: date
     time: str
