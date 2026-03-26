@@ -1,18 +1,19 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-const navItems = [
-  { to: '/', label: '🏠 Dashboard' },
-  { to: '/patients', label: '🧑‍⚕️ Patients' },
-  { to: '/appointments', label: '📅 Appointments' },
-  { to: '/pharmacy', label: '💊 Pharmacy' },
-  { to: '/billing', label: '💳 Billing' },
-  { to: '/reports', label: '📊 Reports' },
+const allNavItems = [
+  { to: '/', label: '🏠 Dashboard', roles: ['admin', 'doctor', 'nurse', 'pharmacist', 'receptionist', 'patient'] },
+  { to: '/patients', label: '🧑‍⚕️ Patients', roles: ['admin', 'doctor', 'nurse', 'receptionist'] },
+  { to: '/appointments', label: '📅 Appointments', roles: ['admin', 'doctor', 'receptionist', 'patient'] },
+  { to: '/pharmacy', label: '💊 Pharmacy', roles: ['admin', 'pharmacist', 'doctor'] },
+  { to: '/billing', label: '💳 Billing', roles: ['admin', 'receptionist', 'patient'] },
+  { to: '/reports', label: '📊 Reports', roles: ['admin', 'doctor', 'receptionist', 'pharmacist'] },
 ]
 
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const navItems = allNavItems.filter(item => item.roles.includes(user?.role))
 
   const handleLogout = () => { logout(); navigate('/login') }
 
@@ -35,7 +36,7 @@ export default function Layout() {
           ))}
         </nav>
         <div className="p-4 border-t border-blue-700 text-sm">
-          <p className="mb-2 text-blue-200">{user?.username} ({user?.role})</p>
+          <p className="mb-2 text-blue-200">{user?.username} <span className="capitalize">({user?.role})</span></p>
           <button onClick={handleLogout} className="w-full bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-white">
             Logout
           </button>
