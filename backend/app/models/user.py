@@ -1,14 +1,7 @@
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String
 from app.core.database import Base
-import enum
 
-class RoleEnum(str, enum.Enum):
-    admin = "admin"
-    doctor = "doctor"
-    nurse = "nurse"
-    pharmacist = "pharmacist"
-    receptionist = "receptionist"
-    patient = "patient"
+ROLES = ("admin", "doctor", "nurse", "pharmacist", "receptionist", "patient")
 
 class User(Base):
     __tablename__ = "users"
@@ -16,4 +9,4 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    role = Column(Enum(RoleEnum), nullable=False, default=RoleEnum.patient)
+    role = Column(String, nullable=False, default="patient")
