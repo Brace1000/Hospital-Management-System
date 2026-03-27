@@ -1,4 +1,3 @@
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base, engine
@@ -11,16 +10,13 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Hospital Management System", version="1.0.0")
 
-# Read allowed origins from env (comma-separated) or fall back to localhost
-raw_origins = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001"
-)
-allowed_origins = [o.strip() for o in raw_origins.split(",")]
+import os
+raw = os.getenv("ALLOWED_ORIGINS", "*")
+origins = [o.strip() for o in raw.split(",")] if raw != "*" else ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
